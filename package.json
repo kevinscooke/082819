@@ -5,7 +5,10 @@
   "dependencies": {
     "react": "^16.9.0",
     "react-dom": "^16.9.0",
-    "react-scripts": "3.1.1"
+    "react-scripts": "3.1.1",
+    "react-expand-collapse": "latest",
+    "antd": "^3.6.6",
+    "@appbaseio/reactivesearch": "3.0.0-rc.18"
   },
   "scripts": {
     "start": "react-scripts start",
