@@ -5,8 +5,10 @@ import {
 	ReactiveBase,
 	DataSearch,
 	MultiList,
+	ResultCard,
 	SelectedFilters,
-	ReactiveList
+	ReactiveList,
+	ResultList
 } from '@appbaseio/reactivesearch';
 import {
 	Row,
@@ -23,9 +25,10 @@ import 'antd/dist/antd.css';
 
 import ExpandCollapse from 'react-expand-collapse';
 
-import './style.css';
+import './App.css';
 
 const { TreeNode } = Tree;
+const { ResultListWrapper } = ReactiveList;
 
 const renderAsTree = (res, key = '0') => {
 	if (!res) return null;
@@ -59,20 +62,49 @@ const renderAsTree = (res, key = '0') => {
 };
 
 function renderItem(res, triggerClickAnalytics) {
-	return (
-		<div onClick={triggerClickAnalytics} className="list-item" key={res._id}>
-			<ExpandCollapse
-				previewHeight="390px"
-				expandText="Show more"
-			>
-				{
-					<Tree showLine>
-						{renderAsTree(res)}
-					</Tree>
-				}
-			</ExpandCollapse>
-		</div>
-	);
+	const iterable = Array.isArray(res) ? res : Object.keys(res);
+
+	return iterable.map((item, index) => {
+
+		// <div onClick={triggerClickAnalytics} className="result-card" key={res._id}>
+		//
+
+		return (
+			// <TreeNode
+			// 	title={
+			// 		<div>
+			// 			<span>{item}:</span>&nbsp;
+			// 			<span dangerouslySetInnerHTML={{ __html: res[item] }} />
+			// 		</div>
+			// 	}
+			// 	key={key + "-" + (index + 1)}
+			// />
+			<ResultCard
+	          componentId="results"
+	          dataField="part_number"
+	          react={{
+	            "and": [
+					      'list-1',
+					      'list-2',
+					      'list-3',
+					      'search'
+					    ]
+	          }}
+	          onData={(res)=>({
+	            "image": "",
+	            "title": "asas",
+	            "description":  "asas"
+	          })}
+	        />
+		);
+
+
+
+		// </div>
+
+	});
+
+
 };
 
 const App = () => (
@@ -83,8 +115,43 @@ const App = () => (
 		analytics
 		searchStateHeader
 	>
+	<Row>
+	<Col span={24}>
+	<div className="navbar">
+			<div className="logo">
+				Product Search
+			</div>
+			<DataSearch
+				componentId="search"
+				dataField={[
+					'﻿part_number'
+				]}
+				fieldWeights={[
+					1
+				]}
+				className="datasearch"
+				fuzziness={1}
+				highlightField={[
+					'﻿part_number'
+				]}
+				innerClass={{
+					"input": "searchbox",
+					"list": "suggestionlist"
+				}}
+				placeholder="Search for your product here"
+
+			/>
+
+			<SelectedFilters />
+
+
+	</div>
+	</Col>
+	</Row>
+	<br />
+	<br />
 		<Row gutter={16} style={{ padding: 20 }}>
-			<Col span={12}>
+			<Col span={6}>
 				<Card>
 				<MultiList
 				  componentId="list-1"
@@ -119,26 +186,8 @@ const App = () => (
 				/>
 				</Card>
 			</Col>
-			<Col span={12}>
-				<DataSearch
-				  componentId="search"
-				  dataField={[
-				    '﻿part_number'
-				  ]}
-				  fieldWeights={[
-				    1
-				  ]}
-				  fuzziness={1}
-				  highlightField={[
-				    '﻿part_number'
-				  ]}
-				  placeholder="Search for your product here"
-				  style={{
-				    marginBottom: 20
-				  }}
-				/>
+			<Col span={18}>
 
-				<SelectedFilters />
 
 				<ReactiveList
 				  componentId="result"
@@ -152,7 +201,104 @@ const App = () => (
 				      'search'
 				    ]
 				  }}
-				  renderItem={renderItem}
+					render={({ data }) => (
+
+						<ReactiveList.ResultListWrapper className ="resultListItem">
+            {
+                data.map(item => (
+									<a href={item.link.split("[")[1].split("]")[0]} target="_blank">
+                    <ResultCard key={item._id}>
+                        <ResultCard.Image src={item.image.split("[")[1].split("]")[0]}/>
+                        <ResultCard.Title
+                            dangerouslySetInnerHTML={{
+                                __html: item.part_number
+                            }}
+                        />
+                        <ResultCard.Description>
+                            <div>
+
+                                <div>Category: {item.category}</div>
+                                <div>
+                                  Flex Type : {item.flex_type}
+                                </div>
+                            </div>
+                            <span>
+                                AWG {item.awg}
+                            </span>
+                        </ResultCard.Description>
+                    </ResultCard>
+										</a>
+                ))
+            }
+        </ReactiveList.ResultListWrapper>
+						// <ReactiveList.ResultListWrapper>
+						// 	{data.map(item => (
+						//
+						//
+						// 		<ResultList key={item._id} className="resultListItem">
+						//
+						// 			<ResultList.Image src={item.image.split("[")[1].split("]")[0]} />
+						// 			<ResultList.Content>
+						// 				<ResultList.Title>
+						// 					<div
+						// 						className="title"
+						// 						dangerouslySetInnerHTML={{
+						// 							__html: item.part_number,
+						// 						}}
+						// 					/>
+						// 				</ResultList.Title>
+						// 				<ResultList.Description>
+						// 				<a href={item.link.split("[")[1].split("]")[0]} target="_blank">
+						//
+						// 					<div className="flex column justify-space-between">
+						//
+						// 					<br />
+						// 						<div>
+						// 							<div>
+						// 								Category:{' '}
+						// 								<span className="cable_prop">
+						// 									{
+						// 										item.category
+						//
+						//
+						// 									}
+						// 								</span>
+						// 							</div>
+						//
+						// 						</div>
+						//
+						// 						<span className="cable_prop">
+						// 							Flex Type: {item.flex_type}
+						// 						</span>
+						// 						<br />
+						// 						<span className="cable_prop">
+						// 							AWG: {item.awg}
+						// 						</span>
+						// 						<br />
+						// 						<span className="cable_prop">
+						// 							Conductors: {item.conductors}
+						// 						</span>
+						// 						<br />
+						// 						<span className="cable_prop">
+						// 							Shielding: {item.shielding}
+						// 						</span>
+						// 						<br />
+						// 						<span className="cable_prop">
+						// 							Braid: {item.braid}
+						// 						</span>
+						// 						<br />
+						// 						<span className="cable_prop">
+						// 							Jacket: {item.jacket}
+						// 						</span>
+						// 					</div>
+						// 					</a>
+						// 				</ResultList.Description>
+						// 			</ResultList.Content>
+						// 		</ResultList>
+						//
+						// 	))}
+						// </ReactiveList.ResultListWrapper>
+					)}
 				  size={5}
 				  style={{
 				    marginTop: 20
@@ -170,3 +316,104 @@ ReactDOM.render(
 );
 
 export default App;
+
+
+
+//
+// import React from 'react';
+// import ReactDOM from 'react-dom';
+//
+// import {
+// 	ReactiveBase,
+// 	SingleDropdownRange,
+// 	ResultList,
+// 	ReactiveList,
+// } from '@appbaseio/reactivesearch';
+//
+// import './index.css';
+//
+// const Main = () => (
+// 	<ReactiveBase app="good-books-ds" credentials="nY6NNTZZ6:27b76b9f-18ea-456c-bc5e-3a5263ebc63d">
+// 		<div className="row reverse-labels">
+// 			<div className="col">
+// 				<SingleDropdownRange
+// 					componentId="BookSensor"
+// 					dataField="average_rating"
+// 					title="SingleDropdownRange"
+// 					data={[
+// 						{ start: 0, end: 3, label: 'Rating < 3' },
+// 						{ start: 3, end: 4, label: 'Rating 3 to 4' },
+// 						{ start: 4, end: 5, label: 'Rating > 4' },
+// 					]}
+// 				/>
+// 			</div>
+// 			<div className="col" style={{ backgroundColor: '#fafafa' }}>
+// 				<ReactiveList
+// 					componentId="SearchResult"
+// 					dataField="original_title"
+// 					size={3}
+// 					className="result-list-container"
+// 					pagination
+// 					URLParams
+// 					react={{
+// 						and: 'BookSensor',
+// 					}}
+// 					render={({ data }) => (
+// 						<ReactiveList.ResultListWrapper>
+// 							{data.map(item => (
+// 								<ResultList key={item._id}>
+// 									<ResultList.Image src={item.image} />
+// 									<ResultList.Content>
+// 										<ResultList.Title>
+// 											<div
+// 												className="book-title"
+// 												dangerouslySetInnerHTML={{
+// 													__html: item.original_title,
+// 												}}
+// 											/>
+// 										</ResultList.Title>
+// 										<ResultList.Description>
+// 											<div className="flex column justify-space-between">
+// 												<div>
+// 													<div>
+// 														by{' '}
+// 														<span className="authors-list">
+// 															{item.authors}
+// 														</span>
+// 													</div>
+// 													<div className="ratings-list flex align-center">
+// 														<span className="stars">
+// 															{Array(item.average_rating_rounded)
+// 																.fill('x')
+// 																.map((
+// 																	item, // eslint-disable-line
+// 																	index,
+// 																) => (
+// 																	<i
+// 																		className="fas fa-star"
+// 																		key={index} // eslint-disable-line
+// 																	/>
+// 																))}
+// 														</span>
+// 														<span className="avg-rating">
+// 															({item.average_rating} avg)
+// 														</span>
+// 													</div>
+// 												</div>
+// 												<span className="pub-year">
+// 													Pub {item.original_publication_year}
+// 												</span>
+// 											</div>
+// 										</ResultList.Description>
+// 									</ResultList.Content>
+// 								</ResultList>
+// 							))}
+// 						</ReactiveList.ResultListWrapper>
+// 					)}
+// 				/>
+// 			</div>
+// 		</div>
+// 	</ReactiveBase>
+// );
+//
+// ReactDOM.render(<Main />, document.getElementById('root'));
